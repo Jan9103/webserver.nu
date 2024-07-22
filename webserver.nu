@@ -3,8 +3,12 @@ export def start_mapped_webserver [
   mappings: record  # example: {"/hello": {|request| format_http 200 "text/plain" "Hello World!"}}
 ]: nothing -> nothing {
   start_webserver $port {|request|
-    let target = ($mappings | get $request.path)
-    do $target $request
+    let target = ($mappings | get -i $request.path)
+    if $target == null {
+      format_http 404 "text/html" "<!DOCTYPE HTML><html>Endpoint is not mapped.</html>"
+    } else {
+      do $target $request
+    }
   }
 }
 
