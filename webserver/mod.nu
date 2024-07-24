@@ -38,7 +38,7 @@ export def start_webserver [
               $i.params
               | split row ";"
               | each {|p| $p | split row "="}
-              | list_to_record
+              | reduce -f {} {|it,acc| $acc | upsert $it.0 $it.1?}
             }
           }
           | select method path params http_version
@@ -56,17 +56,6 @@ export def start_webserver [
   }
   rm -r $tmpdir
   null
-}
-
-
-# taken from my nutils lib to make it standalone
-def list_to_record []: list -> record {
-  let input = ($in)  # for some reason `for i in $in` dosn't work
-  mut out = {}
-  for i in $input {  # `| each` is not mut compatable
-    $out = ($out | upsert $i.0 $i.1?)
-  }
-  $out
 }
 
 
