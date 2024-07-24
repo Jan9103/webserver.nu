@@ -1,0 +1,4 @@
+{
+  "name": "webserver",
+  "nu_libs": {"webserver.nu": "webserver/mod.nu"}
+}

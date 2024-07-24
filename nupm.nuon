@@ -1,0 +1,8 @@
+{
+  "name": "webserver"
+  "version": "1.0.0"
+  "description": "A library for creating webservers with a nu-script backend"
+  "maintainers": ["@jan9103"]
+  "type": "module"
+  "license": "https://github.com/jan9103/webserver.nu/blob/main/LICENSE"
+}

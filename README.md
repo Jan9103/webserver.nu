@@ -14,8 +14,10 @@ Missing (not planned) features:
 
 ## "Installation" / "Setup"
 
+You can use [nupm][] or [numng][], but you will still have to install the dependencies.
+
 1. Install all requirements
-2. Download the file
+2. Download `webserver/mod.nu` as `webserver.nu`
 3. `use` it in your nu scripts
 
 Requirements:
@@ -117,3 +119,7 @@ start_webserver 8080 {|request|
   }
 }
 ```
+
+
+[nupm]: https://github.com/nushell/nupm
+[numng]: https://github.com/jan9103/numng
