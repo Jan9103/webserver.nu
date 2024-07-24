@@ -101,6 +101,9 @@ start_mapped_webserver 8080 {
 }
 ```
 
+**Suggestion:** If you wan't to visualize / expose huge datasets with this the [stor](https://github.com/nushell/nushell/pull/11170)
+command offers a really good interface for this (its accessable from anywhere, fast, etc).
+
 ### Creating a basic webserver
 
 If you need more direct control you can use a basic webserver.
