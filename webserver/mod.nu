@@ -44,8 +44,8 @@ export def start_webserver [
           | select method path params http_version
           | get -i 0
         )
-        print $"Request: ($parsed.method) ($parsed.path)"
         if $parsed == null {return}
+        print $"Request: ($parsed.method) ($parsed.path)"
         do $request_handler $parsed
         | into binary
         | bytes add --end 0x[00]
