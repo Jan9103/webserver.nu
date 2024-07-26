@@ -80,6 +80,10 @@ Even shorter version:
 * JSON: `application/json`
 * HTML: `text/html`
 
+In case your clients (like nushell `http get`) for whatever reason think your json is binary data you can add
+`;charset=UTF-8` to the end of your mime-type (example: `application/json;charset=UTF-8`) to tell them the encoding
+directly.
+
 ### Creating a mapped webserver
 
 A mapped server automatically maps requests to the responsible nu-function
