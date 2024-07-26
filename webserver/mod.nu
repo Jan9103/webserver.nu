@@ -31,6 +31,7 @@ export def start_webserver [
         let parsed = (
           $line
           | parse -r '^(?P<method>GET|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE|PATCH) (?P<path>[^? ]*)(\?(?P<params>[^ ]+))? HTTP/(?P<http_version>[0-9.]+)$'
+          | update url {|i| $i.url | url decode}
           | update params {|i|
             if ($i.params | is-empty) {
               {}
@@ -38,7 +39,9 @@ export def start_webserver [
               $i.params
               | split row "&"
               | each {|p| $p | split row "="}
-              | reduce -f {} {|it,acc| $acc | upsert $it.0 $it.1?}
+              | reduce -f {} {|it,acc|
+                $acc | upsert ($it.0 | url decode) (if ($it.1? == null) {null} else {$it.1 | url decode})
+              }
             }
           }
           | select method path params http_version
