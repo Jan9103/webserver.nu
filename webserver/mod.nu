@@ -33,10 +33,10 @@ export def start_webserver [
           | parse -r '^(?P<method>GET|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE|PATCH) (?P<path>[^? ]*)(\?(?P<params>[^ ]+))? HTTP/(?P<http_version>[0-9.]+)$'
           | update params {|i|
             if ($i.params | is-empty) {
-              null
+              {}
             } else {
               $i.params
-              | split row ";"
+              | split row "&"
               | each {|p| $p | split row "="}
               | reduce -f {} {|it,acc| $acc | upsert $it.0 $it.1?}
             }
