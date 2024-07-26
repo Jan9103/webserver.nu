@@ -31,7 +31,7 @@ export def start_webserver [
         let parsed = (
           $line
           | parse -r '^(?P<method>GET|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE|PATCH) (?P<path>[^? ]*)(\?(?P<params>[^ ]+))? HTTP/(?P<http_version>[0-9.]+)$'
-          | update url {|i| $i.url | url decode}
+          | update path {|i| $i.path | url decode}
           | update params {|i|
             if ($i.params | is-empty) {
               {}
