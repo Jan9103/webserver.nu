@@ -84,6 +84,9 @@ In case your clients (like nushell `http get`) for whatever reason think your js
 `;charset=UTF-8` to the end of your mime-type (example: `application/json;charset=UTF-8`) to tell them the encoding
 directly.
 
+Other response generators:
+* `http_redirect <new_path>`
+
 ### Creating a mapped webserver
 
 A mapped server automatically maps requests to the responsible nu-function

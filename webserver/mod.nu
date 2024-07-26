@@ -74,3 +74,13 @@ export def format_http [
     $body
   ] | str join "\r\n"
 }
+
+export def http_redirect [new_path: string] {
+  [
+    "HTTP/1.1 307"
+    $"Location: ($new_path)"
+    "Content-Type: text/plain;charset=utf-8"
+    ""
+    $"Redirect to ($new_path)"
+  ] | str join "\r\n"
+}
