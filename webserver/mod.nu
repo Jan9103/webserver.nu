@@ -1,3 +1,5 @@
+use std log
+
 export def start_mapped_webserver [
   port: int  # on which port should it listen? (8080 is a common choice)
   mappings: record  # example: {"/hello": {|request| format_http 200 "text/plain" "Hello World!"}}
@@ -54,7 +56,7 @@ export def start_webserver [
           | get -i 0
         )
         if $parsed == null {return}  # not a request line (headers, etc instead); `each` is a bit weird -> `return` instead of `continue`
-        print $"Request: ($parsed.method) ($parsed.path)"
+        log info $"[webserver.nu] Request: ($parsed.method) ($parsed.path)"
         do $request_handler $parsed
         | into binary  # ensure its binary (allow passing strings, etc as well)
         | bytes add --end 0x[00]  # `nc` wants a null terminator
