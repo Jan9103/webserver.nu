@@ -17,15 +17,21 @@ export def start_webserver [
   port: int  # on which port should it listen? (8080 is a common choice)
   request_handler: closure  # example: {|request| format_http 200 "text/plain" "Hello World"}
 ]: nothing -> nothing {
-  # its not possible to mktemp a fifo or just get a path..
+  # fifo makes it possible to pipe things back into a earlier stage of the same pipeline.
+  # since `nc` uses `stdin` for response and `stdout` for request this is required here.
+  #
+  # its not possible to mktemp a fifo or just get a path -> create a dir and put it in there instead
   let tmpdir = (mktemp -d)
   let send_fifo = $"($tmpdir)/send.fifo"
-  mkfifo $send_fifo
+  ^mkfifo $send_fifo
 
+  # catch crtl+c up here - otherwise it would only stop `nc` and therefore be un-exitable
+  # also: it would otherwise be impossible to clean up the tmpdir (fifo, etc)
   try {
+    # i was unable to find a reliable `nc` argument to prevent it from ever exiting -> restart it here whenever necesary
     loop {
-      cat $send_fifo
-      | nc -lN $port
+      ^cat $send_fifo
+      | ^nc -lN $port
       | lines
       | each {|line|
         let parsed = (
@@ -47,11 +53,11 @@ export def start_webserver [
           | select method path params http_version
           | get -i 0
         )
-        if $parsed == null {return}
+        if $parsed == null {return}  # not a request line (headers, etc instead); `each` is a bit weird -> `return` instead of `continue`
         print $"Request: ($parsed.method) ($parsed.path)"
         do $request_handler $parsed
-        | into binary
-        | bytes add --end 0x[00]
+        | into binary  # ensure its binary (allow passing strings, etc as well)
+        | bytes add --end 0x[00]  # `nc` wants a null terminator
         | save -ra $send_fifo
       }
       if $env.LAST_EXIT_CODE != 0 {break}
