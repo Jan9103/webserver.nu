@@ -3,21 +3,33 @@ use std log
 export def start_mapped_webserver [
   port: int  # on which port should it listen? (8080 is a common choice)
   mappings: record  # example: {"/hello": {|request| format_http 200 "text/plain" "Hello World!"}}
+  --crash-on-error  # "rethrow" errors from mappings
+  --send-error-to-client  # if a mapping creates a error send a message to the web-client (warning: this might leak data)
 ]: nothing -> nothing {
-  start_webserver $port {|request|
+  let handler = {|request|
     let target = ($mappings | get -i $request.path)
     if $target == null {
       format_http 404 "text/html" "<!DOCTYPE HTML><html>Endpoint is not mapped.</html>"
     } else {
-      do $target $request
+      try {
+        do $target $request
+      } catch {|err|
+        let error_msg = $'[webserver.nu] handler passed to "start_mapped_webserver" at "($request.path)" created error: ($err.msg) ($err.debug?)'
+        log error $error_msg
+        if $crash_on_error or ($err.msg =~ 'Operation interrupted') { $err.raw }  # rethrow error
+        format_http 300 "text/text" (if $send_error_to_client { $error_msg } else { $'Internal server error' })
+      }
     }
   }
+  if $crash_on_error { start_webserver $port $handler --crash-on-error } else { start_webserver $port $handler }
 }
 
 
 export def start_webserver [
   port: int  # on which port should it listen? (8080 is a common choice)
   request_handler: closure  # example: {|request| format_http 200 "text/plain" "Hello World"}
+  --crash-on-error  # "rethrow" errors from the handler
+  --send-error-to-client  # if the handler creates a error send a message to the web-client (warning: this might leak data)
 ]: nothing -> nothing {
   # fifo makes it possible to pipe things back into a earlier stage of the same pipeline.
   # since `nc` uses `stdin` for response and `stdout` for request this is required here.
@@ -57,15 +69,23 @@ export def start_webserver [
         )
         if $parsed == null {return}  # not a request line (headers, etc instead); `each` is a bit weird -> `return` instead of `continue`
         log info $"[webserver.nu] Request: ($parsed.method) ($parsed.path)"
-        do $request_handler $parsed
+        try {
+          do $request_handler $parsed
+        } catch {|err|
+          let error_msg = $'[webserver.nu] handler passed to "start_webserver" created error: ($err.msg) ($err.debug?)'
+          log error $error_msg
+          if $crash_on_error or ($err.msg =~ 'Operation interrupted') { $err.raw }  # rethrow error
+          format_http 300 "text/text" (if $send_error_to_client { $error_msg } else { $'Internal server error' })
+        }
         | into binary  # ensure its binary (allow passing strings, etc as well)
-        | bytes add --end 0x[00]  # `nc` wants a null terminator
         | save -ra $send_fifo
       }
       if $env.LAST_EXIT_CODE != 0 {break}
     }
+  } catch {|err|
+    rm -r $tmpdir
+    if $err.msg !~ 'Operation interrupted' { $err.raw }  # rethrow error
   }
-  rm -r $tmpdir
   null
 }
 
@@ -74,7 +94,7 @@ export def format_http [
   status_code: int  # http status code (200 means ok)
   mime_type: string  # example: text/plain
   body: string  # the actual response
-] {
+]: nothing -> string {
   [
     $"HTTP/1.1 ($status_code)"
     $"Content-Type: ($mime_type)"
@@ -83,7 +103,7 @@ export def format_http [
   ] | str join "\r\n"
 }
 
-export def http_redirect [new_path: string] {
+export def http_redirect [new_path: string]: nothing -> string {
   [
     "HTTP/1.1 307"
     $"Location: ($new_path)"
