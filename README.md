@@ -14,15 +14,13 @@ Missing (not planned) features:
 
 ## "Installation" / "Setup"
 
-You can use [nupm][] or [numng][], but you will still have to install the dependencies.
-
-1. Install all requirements
-2. Download `webserver/mod.nu` as `webserver.nu`
+1. Install all system-dependencies
+2. Download `webserver/mod.nu` as `webserver.nu` (also possible via [nupm][] or [numng][])
 3. `use` it in your nu scripts
 
-Requirements:
+System-dependencies:
 
-* [nushell](https://nushell.sh) (tested with v0.95)
+* [nushell](https://nushell.sh) (tested with v0.98)
 * [netcat](https://en.wikipedia.org/wiki/Netcat)
 * [mkfifo](https://en.wikipedia.org/wiki/Named_pipe) (part of most linux coreutils)
 
@@ -129,6 +127,20 @@ start_webserver 8080 {|request|
   }
 }
 ```
+
+
+### Debugging
+
+If you want standard nushell error messages you can pass `--crash-on-error` to `start_webserver` or `start_mapped_webserver`.
+
+Another option is to pass `--send-errors-to-client`, which will cause it to send errors to the http-client (browser / curl / ..).
+
+
+## Example projects using this
+
+* [github-repo-backuper](https://github.com/Jan9103/github-repo-backuper): This project archives github-repos into structured data and then uses `webserver.nu` to recreate a website.
+
+If you have a opensource project using `webserver.nu` feel free to open a PR or Issue to get it added.
 
 
 [nupm]: https://github.com/nushell/nupm
