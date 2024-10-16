@@ -14,10 +14,9 @@ export def start_mapped_webserver [
       try {
         do $target $request
       } catch {|err|
-        let error_msg = $'[webserver.nu] handler passed to "start_mapped_webserver" at "($request.path)" created error: ($err.msg) ($err.debug?)'
-        log error $error_msg
         if $crash_on_error or ($err.msg =~ 'Operation interrupted') { $err.raw }  # rethrow error
-        format_http 300 "text/text" (if $send_error_to_client { $error_msg } else { $'Internal server error' })
+        print_err $err
+        format_http 300 "text/text" (if $send_error_to_client { $'[webserver.nu] handler passed to "start_mapped_webserver" at "($request.path)" created error: ($err.msg) ($err.debug?)' } else { $'Internal server error' })
       }
     }
   }
@@ -72,10 +71,9 @@ export def start_webserver [
         try {
           do $request_handler $parsed
         } catch {|err|
-          let error_msg = $'[webserver.nu] handler passed to "start_webserver" created error: ($err.msg) ($err.debug?)'
-          log error $error_msg
           if $crash_on_error or ($err.msg =~ 'Operation interrupted') { $err.raw }  # rethrow error
-          format_http 300 "text/text" (if $send_error_to_client { $error_msg } else { $'Internal server error' })
+          print_err $err
+          format_http 300 "text/text" (if $send_error_to_client { $'[webserver.nu] handler passed to "start_webserver" created error: ($err.msg) ($err.debug?)' } else { $'Internal server error' })
         }
         | into binary  # ensure its binary (allow passing strings, etc as well)
         | save -ra $send_fifo
@@ -111,4 +109,16 @@ export def http_redirect [new_path: string]: nothing -> string {
     ""
     $"Redirect to ($new_path)"
   ] | str join "\r\n"
+}
+
+def print_err [err]: nothing -> nothing {
+  let mv: int = (version | get minor)
+  if $mv < 98 {
+    log error $"caught errror: ($err.msg) ($err.debug?)"
+  } else {
+    # since nu0.98 `tee` can error (with pretty-print) without crashing its parent-process
+    # https://www.nushell.sh/blog/2024-09-17-nushell_0_98_0.html#tee-toc
+    0 | tee {|| $err.raw } | null
+  }
+  # nu0.100 will probably add $err.rendered
 }
