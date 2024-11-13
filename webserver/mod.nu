@@ -113,12 +113,13 @@ export def http_redirect [new_path: string]: nothing -> string {
 
 def print_err [err]: nothing -> nothing {
   let mv: int = (version | get minor)
-  if $mv < 98 {
+  if $mv > 100 {
+    print $err.rendered
+  } else if $mv < 98 {
     log error $"caught errror: ($err.msg) ($err.debug?)"
   } else {
     # since nu0.98 `tee` can error (with pretty-print) without crashing its parent-process
     # https://www.nushell.sh/blog/2024-09-17-nushell_0_98_0.html#tee-toc
     0 | tee {|| $err.raw } | null
   }
-  # nu0.100 will probably add $err.rendered
 }
