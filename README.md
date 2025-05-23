@@ -4,13 +4,17 @@ A nushell library to create basic webservers.
 
 Included features:
 * open http server
-* parse incomming requests
+* parse incoming requests
 * route requests to nu functions
 * send response
 
 Missing (not planned) features:
 * parse request headers and body
 * windows support (`mkfifo` and netcat are required)
+* infinite scalability
+  * thanks to the way `nc` works this can only handle one request at a time and will not respond to other requests at all.
+  * a basic data-viewer or low file count webserver works fine.
+  * something like a git server with hundreds of requests per second instantly topples over.
 
 ## "Installation" / "Setup"
 
@@ -106,8 +110,8 @@ start_mapped_webserver 8080 {
 }
 ```
 
-**Suggestion:** If you wan't to visualize / expose huge datasets with this the [stor](https://github.com/nushell/nushell/pull/11170)
-command offers a really good interface for this (its accessable from anywhere, fast, etc).
+**Suggestion:** If you want to visualize / expose huge datasets with this the [stor](https://github.com/nushell/nushell/pull/11170)
+command offers a really good interface for this (its accessible from anywhere, fast, etc).
 
 ### Creating a basic webserver
 
