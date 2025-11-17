@@ -24,7 +24,7 @@ Missing (not planned) features:
 
 System-dependencies:
 
-* [nushell](https://nushell.sh) (tested with v0.98)
+* [nushell](https://nushell.sh) (v0.106.0 or newer - older versions support older nu versions)
 * [netcat](https://en.wikipedia.org/wiki/Netcat)
 * [mkfifo](https://en.wikipedia.org/wiki/Named_pipe) (part of most linux coreutils)
 
