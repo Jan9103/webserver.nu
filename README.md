@@ -1,3 +1,9 @@
+# ARCHIVAL NOTICE
+
+I no longer use this myself and do not have the time+motivation to keep
+maintaining this nieche experiment.  
+You see the license. Feel free to fork it.
+
 # Nu http-webserver library
 
 A nushell library to create basic webservers.
